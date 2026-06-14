@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GroomIQ - Hairstyle Gallery</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0a0a0f; --card: #13131a; --border: #2a2a3a;
+      --accent: #c8a96e; --text: #e8e8f0; --muted: #888899;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { background:var(--bg); color:var(--text); font-family:'DM Sans',sans-serif; min-height:100vh; }
+
+    header {
+      padding:16px 40px; border-bottom:1px solid var(--border);
+      display:flex; align-items:center; justify-content:space-between;
+      background:rgba(10,10,15,0.95); position:sticky; top:0; z-index:100;
+      backdrop-filter:blur(14px);
+    }
+    header h1 { font-family:'Playfair Display',serif; font-size:1.3rem; color:var(--accent); cursor:pointer; }
+    nav { display:flex; align-items:center; gap:20px; }
+    .nav-item { font-size:0.88rem; color:var(--muted); cursor:pointer; transition:color 0.2s; font-weight:500; text-decoration:none; }
+    .nav-item:hover, .nav-item.active { color:var(--accent); }
+
+    .main { padding:32px 40px; max-width:1200px; margin:0 auto; }
+
+    .page-header { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:16px; margin-bottom:28px; }
+    .page-title { font-family:'Playfair Display',serif; font-size:1.8rem; }
+    .page-title span { color:var(--accent); font-style:italic; }
+    .page-sub { color:var(--muted); font-size:0.88rem; margin-top:4px; }
+
+    .filter-row { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:28px; }
+    .filter-chip {
+      padding:7px 18px; border-radius:50px; font-size:0.82rem; font-weight:500;
+      cursor:pointer; transition:all 0.2s; border:1px solid var(--border);
+      background:transparent; color:var(--muted); font-family:'DM Sans',sans-serif;
+    }
+    .filter-chip:hover, .filter-chip.active { background:var(--accent); border-color:var(--accent); color:#0a0a0f; }
+
+    .gallery-grid {
+      display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:20px;
+    }
+
+    .gallery-card {
+      background:var(--card); border:1px solid var(--border); border-radius:20px;
+      overflow:hidden; transition:all 0.3s;
+    }
+    .gallery-card:hover { transform:translateY(-4px); border-color:rgba(200,169,110,0.3); box-shadow:0 20px 50px rgba(0,0,0,0.4); }
+
+    .gc-img {
+      width:100%; height:200px; object-fit:cover; display:block;
+      background:#1a1a25;
+    }
+    .gc-img-placeholder {
+      width:100%; height:200px; background:linear-gradient(135deg,#1a1a2e,#16213e);
+      display:flex; align-items:center; justify-content:center; font-size:3rem;
+    }
+
+    .gc-body { padding:18px; }
+    .gc-name { font-family:'Playfair Display',serif; font-size:1.1rem; color:var(--text); margin-bottom:4px; }
+    .gc-desc { font-size:0.8rem; color:var(--muted); line-height:1.5; margin-bottom:12px; }
+
+    .gc-badges { display:flex; flex-wrap:wrap; gap:5px; margin-bottom:12px; }
+    .gc-badge {
+      padding:3px 10px; border-radius:50px; font-size:0.68rem; font-weight:600;
+      background:rgba(200,169,110,0.12); color:var(--accent); border:1px solid rgba(200,169,110,0.2);
+    }
+
+    .gc-rating { display:flex; align-items:center; gap:6px; margin-bottom:12px; }
+    .stars { display:flex; gap:2px; }
+    .star { cursor:pointer; font-size:1.1rem; color:var(--muted); transition:color 0.15s; }
+    .star.active, .star:hover { color:var(--accent); }
+    .star.readonly { cursor:default; }
+    .avg-rating { font-size:0.78rem; color:var(--muted); }
+    .avg-rating span { color:var(--accent); font-weight:600; }
+
+    .gc-actions { display:flex; gap:8px; }
+    .gc-btn {
+      flex:1; padding:9px; border-radius:9px; font-family:'DM Sans',sans-serif;
+      font-size:0.78rem; font-weight:600; cursor:pointer; transition:all 0.2s; border:none;
+    }
+    .gc-btn-fav { background:var(--accent); color:#0a0a0f; }
+    .gc-btn-fav:hover { background:#d4b87a; }
+    .gc-btn-fav.saved { background:rgba(232,90,90,0.15); color:#e85a5a; border:1px solid rgba(232,90,90,0.3); }
+
+    .empty-state { text-align:center; padding:80px 20px; color:var(--muted); }
+    .empty-icon { font-size:4rem; margin-bottom:16px; }
+    .empty-title { font-family:'Playfair Display',serif; font-size:1.4rem; color:var(--text); margin-bottom:8px; }
+    .empty-desc { font-size:0.9rem; line-height:1.6; }
+
+    .toast {
+      position:fixed; bottom:30px; left:50%; transform:translateX(-50%);
+      background:var(--card); border:1px solid var(--border); border-radius:12px;
+      padding:12px 24px; font-size:0.85rem; color:var(--text);
+      opacity:0; transition:opacity 0.3s; z-index:200; pointer-events:none;
+    }
+    .toast.show { opacity:1; }
+    .toast.ok { border-color:#4acea8; }
+    .toast.err { border-color:#e85a5a; }
+
+    @media(max-width:768px) {
+      header { padding:14px 20px; }
+      .main { padding:20px; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1 onclick="location.href='dashboard.html'">✦ GroomIQ</h1>
+  <nav>
+    <a class="nav-item" href="dashboard.html">Dashboard</a>
+    <a class="nav-item" href="history.html">History</a>
+    <a class="nav-item active" href="gallery.html">Gallery</a>
+  </nav>
+</header>
+
+<div class="main">
+  <div class="page-header">
+    <div>
+      <div class="page-title">Hairstyle <span>Gallery</span></div>
+      <div class="page-sub">Browse hairstyles curated for your face shape</div>
+    </div>
+  </div>
+
+  <div class="filter-row" id="filterRow">
+    <button class="filter-chip active" onclick="applyFilter('all',this)">All</button>
+  </div>
+
+  <div class="gallery-grid" id="galleryGrid"></div>
+
+  <div class="empty-state" id="emptyState" style="display:none">
+    <div class="empty-icon">💇</div>
+    <div class="empty-title">No Hairstyles Found</div>
+    <div class="empty-desc">Try a different filter or check back later for new styles.</div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="../js/auth.js"></script>
+<script>
+  const API = 'http://127.0.0.1:5001';
+  const user = GroomIQAuth.getSession().user;
+  const userId = user ? user.id : null;
+  let allHairstyles = [];
+  let currentFilter = 'all';
+  let favoriteNames = new Set();
+  let ratingCache = {};
+
+  function showToast(msg, type) {
+    const t = document.getElementById('toast');
+    t.textContent = msg; t.className = 'toast ' + type + ' show';
+    setTimeout(() => t.classList.remove('show'), 2500);
+  }
+
+  function applyFilter(face, btn) {
+    currentFilter = face;
+    document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+    if (btn) btn.classList.add('active');
+    renderGallery();
+  }
+
+  function renderGallery() {
+    const grid = document.getElementById('galleryGrid');
+    const empty = document.getElementById('emptyState');
+    const filtered = currentFilter === 'all'
+      ? allHairstyles
+      : allHairstyles.filter(h => {
+          const shapes = (h.suitable_faces || h.face_shapes || []).map(s => s.toLowerCase());
+          return shapes.includes(currentFilter.toLowerCase());
+        });
+    if (filtered.length === 0) {
+      grid.innerHTML = '';
+      empty.style.display = 'block';
+      return;
+    }
+    empty.style.display = 'none';
+    grid.innerHTML = filtered.map(h => cardHTML(h)).join('');
+  }
+
+  function cardHTML(h) {
+    const name = h.name || h.hairstyle_name || 'Hairstyle';
+    const desc = h.description || '';
+    const shapes = h.suitable_faces || h.face_shapes || [];
+    const imgSrc = h.image_url || h.image || `hairstyles/${name.toLowerCase().replace(/\s+/g,'')}.png`;
+    const isFav = favoriteNames.has(name.toLowerCase());
+    const avg = ratingCache[name] || { avg: 0, count: 0 };
+    return `
+    <div class="gallery-card">
+      <img class="gc-img" src="${imgSrc}" alt="${name}"
+        onerror="this.outerHTML='<div class=\\'gc-img-placeholder\\'>💇</div>'">
+      <div class="gc-body">
+        <div class="gc-name">${name}</div>
+        <div class="gc-desc">${desc}</div>
+        <div class="gc-badges">${shapes.map(s => `<span class="gc-badge">${s}</span>`).join('')}</div>
+        <div class="gc-rating">
+          <div class="stars" data-hairstyle="${name}">
+            ${[1,2,3,4,5].map(i => `<span class="star" data-val="${i}" onclick="rateStar('${name}',${i},this)">★</span>`).join('')}
+          </div>
+          <div class="avg-rating"><span>${avg.avg.toFixed(1)}</span> (${avg.count})</div>
+        </div>
+        <div class="gc-actions">
+          <button class="gc-btn gc-btn-fav${isFav ? ' saved' : ''}" onclick="toggleFav('${name}',this)">
+            ${isFav ? '❤ Saved' : '♡ Save'}
+          </button>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  async function toggleFav(name, btn) {
+    if (!userId) { showToast('Please log in to save favorites', 'err'); return; }
+    const isFav = favoriteNames.has(name.toLowerCase());
+    try {
+      if (isFav) {
+        await GroomIQAuth.apiFetch(`/favorites/${userId}/${encodeURIComponent(name)}`, { method:'DELETE' });
+        favoriteNames.delete(name.toLowerCase());
+        btn.textContent = '♡ Save'; btn.classList.remove('saved');
+        showToast('Removed from favorites', 'ok');
+      } else {
+        await GroomIQAuth.apiFetch(`/favorites/${userId}`, { method:'POST', body:JSON.stringify({hairstyle:name}) });
+        favoriteNames.add(name.toLowerCase());
+        btn.textContent = '❤ Saved'; btn.classList.add('saved');
+        showToast('Saved to favorites', 'ok');
+      }
+    } catch(e) { showToast('Error: ' + (e.message||'Request failed'), 'err'); }
+  }
+
+  async function rateStar(hairstyle, val, el) {
+    if (!userId) { showToast('Please log in to rate', 'err'); return; }
+    try {
+      await GroomIQAuth.apiFetch('/ratings', { method:'POST', body:JSON.stringify({hairstyle, rating:val, user_id:userId}) });
+      showToast('Rating submitted', 'ok');
+      loadRating(hairstyle);
+    } catch(e) { showToast('Error submitting rating', 'err'); }
+  }
+
+  async function loadRating(hairstyle) {
+    try {
+      const d = await GroomIQAuth.apiFetch(`/ratings/${encodeURIComponent(hairstyle)}`);
+      ratingCache[hairstyle] = { avg: d.average_rating || 0, count: d.total_ratings || 0 };
+      renderGallery();
+    } catch(e) {}
+  }
+
+  async function loadFavorites() {
+    if (!userId) return;
+    try {
+      const d = await GroomIQAuth.apiFetch(`/favorites/${userId}`);
+      if (d.favorites) {
+        d.favorites.forEach(f => favoriteNames.add((f.hairstyle||f.name||'').toLowerCase()));
+      }
+    } catch(e) {}
+  }
+
+  async function loadGallery() {
+    try {
+      const d = await GroomIQAuth.apiFetch('/gallery');
+      allHairstyles = d.hairstyles || d.gallery || [];
+      // Build filter chips
+      const shapeSet = new Set();
+      allHairstyles.forEach(h => {
+        (h.suitable_faces || h.face_shapes || []).forEach(s => shapeSet.add(s));
+      });
+      const filterRow = document.getElementById('filterRow');
+      filterRow.innerHTML = '<button class="filter-chip active" onclick="applyFilter(\'all\',this)">All</button>';
+      shapeSet.forEach(s => {
+        const btn = document.createElement('button');
+        btn.className = 'filter-chip';
+        btn.textContent = s;
+        btn.onclick = function(){ applyFilter(s,this); };
+        filterRow.appendChild(btn);
+      });
+      renderGallery();
+    } catch(e) {
+      document.getElementById('galleryGrid').innerHTML = '';
+      document.getElementById('emptyState').style.display = 'block';
+      document.getElementById('emptyState').querySelector('.empty-desc').textContent = 'Could not load gallery. Make sure the server is running.';
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', async () => {
+    await loadFavorites();
+    await loadGallery();
+  });
+</script>
+</body>
+</html>

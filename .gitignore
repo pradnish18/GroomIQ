@@ -1,0 +1,17 @@
+datasets/
+model/*.h5
+model/*.pkl
+model/training_plot.png
+.DS_Store
+__pycache__/
+*.pyc
+*.pyo
+nano check_images.py
+backend/venv/
+backend/__pycache__/
+*.egg-info/
+dist/
+build/
+.env
+*.log
+/tmp/

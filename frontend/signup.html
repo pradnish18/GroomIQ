@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign Up - GroomIQ</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <style>
+    :root {
+      --bg: #0a0a0f; --card: #13131a; --border: #2a2a3a;
+      --accent: #c8a96e; --text: #e8e8f0; --muted: #888899;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: var(--bg);
+      min-height: 100vh;
+      display: flex;
+      font-family: 'DM Sans', sans-serif;
+      overflow: hidden;
+    }
+
+    /* Left Panel */
+    .left {
+      flex: 1;
+      background: linear-gradient(135deg, #0f0f18 0%, #1a1428 100%);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 60px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .left::before {
+      content: '';
+      position: absolute;
+      width: 400px; height: 400px;
+      background: radial-gradient(circle, rgba(200,169,110,0.1) 0%, transparent 70%);
+      bottom: -100px; left: -100px;
+    }
+
+    .left::after {
+      content: '';
+      position: absolute;
+      width: 300px; height: 300px;
+      background: radial-gradient(circle, rgba(124,111,205,0.08) 0%, transparent 70%);
+      top: -50px; right: -50px;
+    }
+
+    .left-content { position: relative; z-index: 1; }
+
+    .brand {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.4rem;
+      color: var(--accent);
+      letter-spacing: 1px;
+      margin-bottom: 56px;
+    }
+
+    .left h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 2.8rem;
+      color: var(--text);
+      line-height: 1.2;
+      margin-bottom: 18px;
+    }
+
+    .left h1 span { color: var(--accent); }
+
+    .left > .desc {
+      color: var(--muted);
+      font-size: 0.95rem;
+      line-height: 1.7;
+      max-width: 380px;
+      margin-bottom: 36px;
+    }
+
+    .features {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .feature {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      color: #cccce0;
+      font-size: 0.9rem;
+    }
+
+    .feature-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--accent);
+      flex-shrink: 0;
+    }
+
+    /* Right Panel */
+    .right {
+      width: 520px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px;
+      background: var(--bg);
+      border-left: 1px solid var(--border);
+      overflow-y: auto;
+    }
+
+    .card {
+      width: 100%;
+      max-width: 420px;
+    }
+
+    .card h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.7rem;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+
+    .card > .sub {
+      color: var(--muted);
+      font-size: 0.85rem;
+      margin-bottom: 24px;
+    }
+
+    .input-group { margin-bottom: 14px; }
+
+    .input-group label {
+      display: block;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--muted);
+      margin-bottom: 7px;
+    }
+
+    .input-wrapper {
+      position: relative;
+    }
+
+    .input-group input {
+      width: 100%;
+      padding: 12px 16px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.9rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .input-group input:focus { border-color: var(--accent); }
+    .input-group input::placeholder { color: var(--muted); }
+
+    .toggle-pw {
+      position: absolute;
+      right: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 0.9rem;
+      padding: 0;
+      line-height: 1;
+    }
+    .toggle-pw:hover { color: var(--accent); }
+
+    /* Password Strength */
+    .strength-wrap { margin-top: 8px; }
+
+    .strength-bar-bg {
+      height: 4px;
+      background: rgba(255,255,255,0.08);
+      border-radius: 10px;
+      overflow: hidden;
+      margin-bottom: 5px;
+    }
+
+    #strengthMeter {
+      height: 100%;
+      width: 0%;
+      border-radius: 10px;
+      transition: all 0.3s ease;
+    }
+
+    .strength-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    #strengthLabel {
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: var(--muted);
+      transition: color 0.3s;
+    }
+
+    #passwordRules {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2px 12px;
+      font-size: 0.72rem;
+      margin-top: 6px;
+      line-height: 1.7;
+    }
+
+    .form-error {
+      background: rgba(232,90,90,0.1);
+      border: 1px solid rgba(232,90,90,0.3);
+      border-radius: 10px;
+      padding: 12px 16px;
+      color: #e85a5a;
+      font-size: 0.83rem;
+      margin-bottom: 16px;
+      display: none;
+    }
+
+    .btn-primary {
+      width: 100%;
+      padding: 13px;
+      background: var(--accent);
+      color: #0a0a0f;
+      border: none;
+      border-radius: 10px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 6px;
+      transition: all 0.2s;
+    }
+
+    .btn-primary:hover {
+      background: #d4b87a;
+      transform: translateY(-1px);
+      box-shadow: 0 8px 25px rgba(200,169,110,0.25);
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 20px 0;
+    }
+
+    .divider span {
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    .divider p {
+      color: var(--muted);
+      font-size: 0.78rem;
+      white-space: nowrap;
+    }
+
+    .social-btns {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .btn-social {
+      width: 100%;
+      padding: 12px;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.88rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .btn-social:hover {
+      border-color: var(--accent);
+      background: rgba(200,169,110,0.05);
+      transform: translateY(-1px);
+    }
+
+    .btn-social svg {
+      width: 18px;
+      height: 18px;
+      flex-shrink: 0;
+    }
+
+    .switch {
+      text-align: center;
+      margin-top: 18px;
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+
+    .switch a {
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .switch a:hover { text-decoration: underline; }
+
+    /* Mobile */
+    @media (max-width: 820px) {
+      body { flex-direction: column; overflow: auto; }
+      .left { padding: 40px 30px; min-height: auto; }
+      .left h1 { font-size: 2rem; }
+      .brand { margin-bottom: 32px; }
+      .right { width: 100%; border-left: none; border-top: 1px solid var(--border); padding: 32px 24px; }
+    }
+
+    @media (max-width: 480px) {
+      .left { padding: 28px 20px; }
+      .right { padding: 24px 16px; }
+      #passwordRules { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Left Panel -->
+<div class="left">
+  <div class="left-content">
+    <div class="brand">✦ GroomIQ</div>
+    <h1>Discover Your <span>Perfect</span> Grooming Style</h1>
+    <p class="desc">AI-powered grooming intelligence with face shape analysis, beard recommendations, hairstyle suggestions and personalized hair health insights.</p>
+    <div class="features">
+      <div class="feature"><div class="feature-dot"></div>Face shape detection</div>
+      <div class="feature"><div class="feature-dot"></div>Hair health analysis</div>
+      <div class="feature"><div class="feature-dot"></div>Beard recommendations</div>
+      <div class="feature"><div class="feature-dot"></div>AR hairstyle visualization</div>
+    </div>
+  </div>
+</div>
+
+<!-- Right Panel -->
+<div class="right">
+  <div class="card">
+    <h2>Create Account</h2>
+    <p class="sub">Join thousands discovering better grooming</p>
+
+    <div class="form-error" id="formError">⚠ Error message</div>
+
+    <div class="input-group">
+      <label>Full Name</label>
+      <input type="text" id="fullName" placeholder="Your full name" autocomplete="name"
+             oninput="clearError()">
+    </div>
+
+    <div class="input-group">
+      <label>Email</label>
+      <input type="email" id="email" placeholder="you@example.com" autocomplete="email"
+             oninput="clearError()">
+    </div>
+
+    <div class="input-group">
+      <label>Password</label>
+      <div class="input-wrapper">
+        <input type="password" id="password" placeholder="Create a strong password" autocomplete="new-password"
+               oninput="clearError()">
+        <button class="toggle-pw" type="button" onclick="togglePassword('password', this)" tabindex="-1">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
+      </div>
+      <div class="strength-wrap">
+        <div class="strength-top">
+          <span style="font-size:0.72rem; color:var(--muted);">Password strength</span>
+          <span id="strengthLabel"></span>
+        </div>
+        <div class="strength-bar-bg">
+          <div id="strengthMeter"></div>
+        </div>
+        <div id="passwordRules"></div>
+      </div>
+    </div>
+
+    <div class="input-group">
+      <label>Confirm Password</label>
+      <div class="input-wrapper">
+        <input type="password" id="confirmPassword" placeholder="Re-enter your password" autocomplete="new-password"
+               oninput="clearError()"
+               onkeydown="if(event.key==='Enter') handleSignup(event)">
+        <button class="toggle-pw" type="button" onclick="togglePassword('confirmPassword', this)" tabindex="-1">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <button class="btn-primary" id="signupBtn" onclick="handleSignup(event)">Create Account →</button>
+
+    <div class="divider">
+      <span></span>
+      <p>or continue with</p>
+      <span></span>
+    </div>
+
+    <div class="social-btns">
+      <button class="btn-social" onclick="handleGoogleSignIn()">
+        <svg viewBox="0 0 48 48"><path fill="#FFC107" d="M43.611 20.083H42V20H24v8h11.303c-1.649 4.657-6.08 8-11.303 8-6.627 0-12-5.373-12-12s5.373-12 12-12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4 12.955 4 4 12.955 4 24s8.955 20 20 20 20-8.955 20-20c0-1.341-.138-2.65-.389-3.917z"/><path fill="#FF3D00" d="m6.306 14.691 6.571 4.819C14.655 15.108 18.961 12 24 12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4 16.318 4 9.656 8.337 6.306 14.691z"/><path fill="#4CAF50" d="M24 44c5.166 0 9.86-1.977 13.409-5.192l-6.19-5.238A11.91 11.91 0 0 1 24 36c-5.202 0-9.619-3.317-11.283-7.946l-6.522 5.025C9.505 39.556 16.227 44 24 44z"/><path fill="#1976D2" d="M43.611 20.083H42V20H24v8h11.303a12.04 12.04 0 0 1-4.087 5.571l.003-.002 6.19 5.238C36.971 39.205 44 34 44 24c0-1.341-.138-2.65-.389-3.917z"/></svg>
+        Continue with Google
+      </button>
+      <button class="btn-social" onclick="handleGitHubSignIn()">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+        Continue with GitHub
+      </button>
+    </div>
+
+    <p class="switch">
+      Already have an account? <a href="login.html">Login</a>
+    </p>
+  </div>
+</div>
+
+<script src="../js/auth.js"></script>
+<script>
+function togglePassword(inputId, btn) {
+  const input = document.getElementById(inputId);
+  const isPassword = input.type === 'password';
+  input.type = isPassword ? 'text' : 'password';
+  btn.innerHTML = isPassword
+    ? '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>'
+    : '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
+  btn.setAttribute('aria-label', isPassword ? 'Hide password' : 'Show password');
+}
+
+// Password strength
+const passwordInput = document.getElementById('password');
+const meter = document.getElementById('strengthMeter');
+const strengthLabel = document.getElementById('strengthLabel');
+const rules = document.getElementById('passwordRules');
+
+function evaluatePassword(password) {
+  let score = 0;
+  const checks = {
+    length: password.length >= 8,
+    upper: /[A-Z]/.test(password),
+    lower: /[a-z]/.test(password),
+    number: /\d/.test(password),
+    special: /[^A-Za-z0-9]/.test(password)
+  };
+  Object.values(checks).forEach(v => { if (v) score++; });
+
+  const items = [
+    ['8+ characters', checks.length],
+    ['Uppercase letter', checks.upper],
+    ['Lowercase letter', checks.lower],
+    ['Number', checks.number],
+    ['Special character', checks.special]
+  ];
+
+  rules.innerHTML = items
+    .map(([txt, ok]) => `<span style="color:${ok ? '#4acea8' : '#888899'}">${ok ? '✓' : '○'} ${txt}</span>`)
+    .join('');
+
+  const percent = score * 20;
+  meter.style.width = percent + '%';
+
+  if (score <= 2) {
+    meter.style.background = '#e85a5a';
+    strengthLabel.textContent = 'Weak';
+    strengthLabel.style.color = '#e85a5a';
+  } else if (score <= 4) {
+    meter.style.background = '#ffbf47';
+    strengthLabel.textContent = 'Medium';
+    strengthLabel.style.color = '#ffbf47';
+  } else {
+    meter.style.background = '#4acea8';
+    strengthLabel.textContent = 'Strong';
+    strengthLabel.style.color = '#4acea8';
+  }
+}
+
+passwordInput.addEventListener('input', e => {
+  evaluatePassword(e.target.value);
+});
+
+function showError(message) {
+  const el = document.getElementById('formError');
+  el.textContent = '⚠ ' + message;
+  el.style.display = 'block';
+}
+
+function clearError() {
+  document.getElementById('formError').style.display = 'none';
+}
+
+async function handleSignup(event) {
+  if (event) event.preventDefault();
+  clearError();
+
+  const fullName = document.getElementById('fullName').value.trim();
+  const email = document.getElementById('email').value.trim();
+  const password = passwordInput.value;
+  const confirmPassword = document.getElementById('confirmPassword').value;
+  const btn = document.getElementById('signupBtn');
+
+  if (!fullName || !email || !password) {
+    showError('Please fill in all fields');
+    return;
+  }
+
+  if (password !== confirmPassword) {
+    showError('Passwords do not match');
+    return;
+  }
+
+  if (password.length < 8) {
+    showError('Password must be at least 8 characters');
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Creating Account...';
+
+  try {
+    await GroomIQAuth.signup({ preventDefault: () => {} });
+  } catch (err) {
+    showError(err.message || 'Signup failed. Please try again.');
+    btn.disabled = false;
+    btn.textContent = 'Create Account →';
+  }
+}
+
+let googleInitialized = false;
+
+function initGoogleSignIn() {
+  if (window.google && !googleInitialized) {
+    google.accounts.id.initialize({
+      client_id: '577213626701-jdga4crhi59ahkdcd781ai8d6tp70p57.apps.googleusercontent.com',
+      callback: handleCredentialResponse,
+      cancel_on_tap_outside: false,
+    });
+    googleInitialized = true;
+  }
+}
+
+function handleGoogleSignIn() {
+  if (!window.google) {
+    showError('Google Sign-In is loading. Please try again.');
+    return;
+  }
+  initGoogleSignIn();
+  google.accounts.id.prompt();
+}
+
+function handleCredentialResponse(response) {
+  try {
+    const payload = JSON.parse(atob(response.credential.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
+    googleAuth({ email: payload.email, name: payload.name, sub: payload.sub });
+  } catch (e) {
+    showError('Failed to process Google Sign-In.');
+    console.error(e);
+  }
+}
+
+window.addEventListener('load', initGoogleSignIn);
+
+function handleGitHubSignIn() {
+  showError('GitHub Sign-In will be available soon.');
+}
+</script>
+</body>
+</html>

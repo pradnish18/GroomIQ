@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GroomIQ – History</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --bg: #0a0a0f; --card: #13131a; --border: #2a2a3a;
+      --accent: #c8a96e; --text: #e8e8f0; --muted: #888899;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { background:var(--bg); color:var(--text); font-family:'DM Sans',sans-serif; min-height:100vh; }
+    body::before { content:''; position:fixed; inset:0; background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E"); pointer-events:none; z-index:0; }
+    header { position:sticky; top:0; z-index:100; padding:16px 60px; display:flex; align-items:center; justify-content:space-between; background:rgba(10,10,15,0.9); backdrop-filter:blur(20px); border-bottom:1px solid rgba(200,169,110,0.1); }
+    .logo { font-family:'Playfair Display',serif; font-size:1.25rem; color:var(--accent); letter-spacing:1px; text-decoration:none; }
+    nav { display:flex; align-items:center; gap:24px; }
+    nav a { color:var(--muted); text-decoration:none; font-size:0.85rem; transition:color 0.2s; cursor:pointer; }
+    nav a:hover, nav a.active { color:var(--text); }
+    .container { max-width:1100px; margin:0 auto; padding:36px 24px 60px; }
+    .page-header { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:16px; margin-bottom:28px; }
+    .ph-left h2 { font-family:'Playfair Display',serif; font-size:clamp(1.5rem,2.5vw,2rem); color:var(--text); }
+    .ph-left h2 span { color:var(--accent); font-style:italic; }
+    .ph-left p { color:var(--muted); font-size:0.85rem; margin-top:4px; }
+    .ph-actions { display:flex; gap:10px; flex-wrap:wrap; }
+    .btn { padding:10px 22px; border-radius:8px; font-family:'DM Sans',sans-serif; font-size:0.83rem; font-weight:600; cursor:pointer; transition:all 0.2s; border:none; text-decoration:none; display:inline-flex; align-items:center; gap:6px; }
+    .btn-primary { background:var(--accent); color:#0a0a0f; }
+    .btn-primary:hover { background:#d4b87a; }
+    .btn-danger { background:transparent; border:1px solid rgba(232,90,90,0.3); color:#e85a5a; }
+    .btn-danger:hover { background:rgba(232,90,90,0.1); }
+    .stats-row { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:28px; }
+    .stat-card { background:var(--card); border:1px solid var(--border); border-radius:16px; padding:18px 20px; display:flex; align-items:center; gap:14px; }
+    .stat-icon { width:42px; height:42px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:1.2rem; flex-shrink:0; }
+    .si-gold { background:rgba(200,169,110,0.15); }
+    .si-green { background:rgba(74,206,168,0.15); }
+    .si-purple { background:rgba(124,111,205,0.15); }
+    .si-red { background:rgba(232,90,90,0.15); }
+    .stat-val { font-family:'Playfair Display',serif; font-size:1.5rem; color:var(--text); line-height:1; }
+    .stat-lbl { font-size:0.72rem; color:var(--muted); text-transform:uppercase; letter-spacing:0.5px; margin-top:3px; }
+    .controls-row { display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:24px; }
+    .controls-row .search-wrap { position:relative; flex:1; min-width:200px; max-width:320px; }
+    .controls-row .search-wrap input { width:100%; padding:10px 16px 10px 38px; background:rgba(255,255,255,0.04); border:1px solid var(--border); border-radius:10px; color:var(--text); font-family:'DM Sans',sans-serif; font-size:0.85rem; outline:none; transition:border-color 0.2s; }
+    .controls-row .search-wrap input:focus { border-color:var(--accent); }
+    .controls-row .search-wrap .search-icon { position:absolute; left:12px; top:50%; transform:translateY(-50%); color:var(--muted); font-size:0.9rem; pointer-events:none; }
+    .controls-row select { padding:10px 14px; background:rgba(255,255,255,0.04); border:1px solid var(--border); border-radius:10px; color:var(--text); font-family:'DM Sans',sans-serif; font-size:0.83rem; outline:none; cursor:pointer; transition:border-color 0.2s; }
+    .controls-row select:focus { border-color:var(--accent); }
+    .filter-chips { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:24px; }
+    .filter-chip { padding:7px 16px; border-radius:50px; font-size:0.8rem; font-weight:500; cursor:pointer; transition:all 0.2s; border:1px solid var(--border); background:transparent; color:var(--muted); font-family:'DM Sans',sans-serif; }
+    .filter-chip:hover { border-color:var(--accent); color:var(--accent); }
+    .filter-chip.active { background:var(--accent); border-color:var(--accent); color:#0a0a0f; }
+    .history-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(320px,1fr)); gap:20px; }
+    .card { background:var(--card); border:1px solid var(--border); border-radius:20px; overflow:hidden; transition:all 0.3s; animation:fadeUp 0.5s ease forwards; opacity:0; }
+    .card:hover { transform:translateY(-4px); border-color:var(--accent); box-shadow:0 20px 40px rgba(0,0,0,0.4); }
+    @keyframes fadeUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+    .card-img { width:100%; height:180px; object-fit:cover; display:block; background:#1a1a25; }
+    .card-no-img { width:100%; height:180px; background:linear-gradient(135deg,#1a1a2e,#16213e); display:flex; align-items:center; justify-content:center; font-size:3.5rem; }
+    .card-body { padding:18px; }
+    .card-top { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:10px; }
+    .card-face { font-family:'Playfair Display',serif; font-size:1.1rem; color:var(--text); }
+    .card-badge { padding:4px 10px; border-radius:50px; font-size:0.72rem; font-weight:600; }
+    .card-meta { display:flex; gap:14px; margin-bottom:12px; flex-wrap:wrap; }
+    .card-meta-item { font-size:0.76rem; color:var(--muted); }
+    .card-meta-item span { color:var(--text); font-weight:500; }
+    .card-tags { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:12px; }
+    .card-tag { padding:3px 10px; border-radius:50px; font-size:0.7rem; background:rgba(255,255,255,0.04); border:1px solid var(--border); color:var(--muted); }
+    .conf-bar-wrap { margin-bottom:12px; }
+    .conf-bar-label { display:flex; justify-content:space-between; font-size:0.73rem; color:var(--muted); margin-bottom:4px; }
+    .conf-bar-label span { color:var(--accent); font-weight:600; }
+    .conf-bar-track { height:5px; background:rgba(255,255,255,0.06); border-radius:3px; overflow:hidden; }
+    .conf-bar-fill { height:100%; border-radius:3px; background:linear-gradient(90deg,var(--accent),#e8c07a); transition:width 0.8s ease; }
+    .card-footer { padding:12px 18px; border-top:1px solid var(--border); display:flex; gap:8px; }
+    .cf-btn { flex:1; padding:9px; border-radius:8px; font-family:'DM Sans',sans-serif; font-size:0.76rem; font-weight:600; cursor:pointer; transition:all 0.2s; border:none; text-align:center; }
+    .cf-btn-view { background:var(--accent); color:#0a0a0f; }
+    .cf-btn-view:hover { background:#d4b87a; }
+    .cf-btn-share { background:rgba(74,206,168,0.1); color:#4acea8; border:1px solid rgba(74,206,168,0.2); }
+    .cf-btn-share:hover { background:rgba(74,206,168,0.2); }
+    .cf-btn-del { background:rgba(232,90,90,0.1); color:#e85a5a; border:1px solid rgba(232,90,90,0.2); }
+    .cf-btn-del:hover { background:rgba(232,90,90,0.2); }
+    .empty-state { text-align:center; padding:80px 20px; color:var(--muted); }
+    .empty-icon { font-size:4rem; margin-bottom:16px; }
+    .empty-title { font-family:'Playfair Display',serif; font-size:1.6rem; color:var(--text); margin-bottom:8px; }
+    .empty-desc { font-size:0.9rem; line-height:1.6; margin-bottom:28px; }
+    .modal-bg { position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:1000; display:flex; align-items:center; justify-content:center; padding:20px; opacity:0; pointer-events:none; transition:opacity 0.3s; backdrop-filter:blur(6px); }
+    .modal-bg.open { opacity:1; pointer-events:all; }
+    .modal { background:var(--card); border:1px solid var(--border); border-radius:24px; max-width:580px; width:100%; max-height:90vh; overflow-y:auto; transform:translateY(24px); transition:transform 0.3s; position:relative; }
+    .modal-bg.open .modal { transform:translateY(0); }
+    .modal-x { position:absolute; top:14px; right:14px; width:36px; height:36px; border-radius:50%; background:rgba(0,0,0,0.5); border:none; color:var(--text); font-size:1rem; cursor:pointer; display:flex; align-items:center; justify-content:center; z-index:10; }
+    .modal-img { width:100%; height:240px; object-fit:cover; display:block; border-radius:24px 24px 0 0; background:#1a1a25; }
+    .modal-no-img { width:100%; height:240px; background:linear-gradient(135deg,#1a1a2e,#16213e); display:flex; align-items:center; justify-content:center; font-size:4rem; border-radius:24px 24px 0 0; }
+    .modal-body { padding:24px; }
+    .modal-title { font-family:'Playfair Display',serif; font-size:1.5rem; color:var(--text); margin-bottom:4px; }
+    .modal-date { font-size:0.8rem; color:var(--muted); margin-bottom:18px; }
+    .modal-stats { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:20px; }
+    .modal-stat { background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:12px; padding:14px; text-align:center; }
+    .modal-stat-val { font-family:'Playfair Display',serif; font-size:1.1rem; color:var(--accent); }
+    .modal-stat-lbl { font-size:0.7rem; color:var(--muted); text-transform:uppercase; letter-spacing:0.5px; margin-top:4px; }
+    .modal-sec-title { font-size:0.73rem; text-transform:uppercase; letter-spacing:1px; color:var(--muted); margin-bottom:8px; margin-top:18px; }
+    .modal-sec-text { font-size:0.85rem; color:var(--muted); line-height:1.6; }
+    .modal-tags { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:12px; }
+    .modal-tag { padding:3px 10px; border-radius:50px; font-size:0.72rem; background:rgba(200,169,110,0.1); border:1px solid rgba(200,169,110,0.2); color:var(--accent); }
+    .modal-tips { display:flex; flex-direction:column; gap:8px; }
+    .modal-tip { font-size:0.82rem; color:var(--muted); line-height:1.5; display:flex; gap:8px; }
+    .modal-tip::before { content:'💡'; flex-shrink:0; }
+    .modal-footer { padding:16px 24px; border-top:1px solid var(--border); display:flex; gap:10px; flex-wrap:wrap; }
+    .mf-btn { flex:1; padding:12px; border-radius:10px; font-family:'DM Sans',sans-serif; font-size:0.85rem; font-weight:600; cursor:pointer; transition:all 0.2s; border:none; text-align:center; min-width:120px; }
+    .mf-btn-primary { background:var(--accent); color:#0a0a0f; }
+    .mf-btn-primary:hover { background:#d4b87a; }
+    .mf-btn-secondary { background:rgba(255,255,255,0.05); color:var(--text); border:1px solid var(--border); }
+    .mf-btn-secondary:hover { border-color:var(--accent); color:var(--accent); }
+    .chart-section { margin-bottom:28px; display:none; }
+    .chart-section.visible { display:block; }
+    .chart-card { background:var(--card); border:1px solid var(--border); border-radius:20px; padding:28px; }
+    .chart-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:24px; }
+    .chart-title { font-family:'Playfair Display',serif; font-size:1.15rem; color:var(--text); }
+    .chart-sub { font-size:0.76rem; color:var(--muted); margin-top:2px; }
+    .chart-wrap { position:relative; height:200px; }
+    canvas#progressChart { width:100% !important; height:200px !important; }
+    .chart-legend { display:flex; gap:16px; flex-wrap:wrap; margin-top:14px; }
+    .legend-item { display:flex; align-items:center; gap:6px; font-size:0.76rem; color:var(--muted); }
+    .legend-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+    .no-match { grid-column:1/-1; text-align:center; padding:48px; color:var(--muted); font-size:0.9rem; }
+    @media(max-width:768px) {
+      header { padding:14px 20px; }
+      .container { padding:24px 16px; }
+      .stats-row { grid-template-columns:repeat(2,1fr); }
+      .page-header { flex-direction:column; align-items:flex-start; }
+      .modal-stats { grid-template-columns:repeat(2,1fr); }
+      .modal-footer { flex-direction:column; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <a href="dashboard.html" class="logo">✦ GroomIQ</a>
+  <nav>
+    <a href="dashboard.html">Dashboard</a>
+    <a class="active">History</a>
+  </nav>
+</header>
+
+<div class="container">
+
+  <div class="page-header">
+    <div class="ph-left">
+      <h2>Analysis <span>History</span></h2>
+      <p>View all your face shape, beard & hairstyle reports</p>
+    </div>
+    <div class="ph-actions">
+      <button class="btn btn-danger" onclick="confirmClearAll()">🗑 Clear All</button>
+      <a href="dashboard.html" class="btn btn-primary">✦ New Analysis</a>
+    </div>
+  </div>
+
+  <div class="stats-row" id="statsRow" style="display:none">
+    <div class="stat-card">
+      <div class="stat-icon si-gold">📊</div>
+      <div>
+        <div class="stat-val" id="statTotal">0</div>
+        <div class="stat-lbl">Total Analyses</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon si-green">🧑</div>
+      <div>
+        <div class="stat-val" id="statTopFace">—</div>
+        <div class="stat-lbl">Most Common Face Shape</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon si-purple">🎯</div>
+      <div>
+        <div class="stat-val" id="statAvgConf">—</div>
+        <div class="stat-lbl">Avg Confidence</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon si-red">📅</div>
+      <div>
+        <div class="stat-val" id="statLastDate">—</div>
+        <div class="stat-lbl">Last Analysis</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="chart-section" id="chartSection">
+    <div class="chart-card">
+      <div class="chart-header">
+        <div>
+          <div class="chart-title">📈 Confidence Over Time</div>
+          <div class="chart-sub">How your analysis confidence has changed across sessions</div>
+        </div>
+      </div>
+      <div class="chart-wrap">
+        <canvas id="progressChart"></canvas>
+      </div>
+      <div class="chart-legend" id="chartLegend"></div>
+    </div>
+  </div>
+
+  <div class="controls-row" id="controlsRow" style="display:none">
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input type="text" id="searchInput" placeholder="Search analyses..." oninput="applyFilters()">
+    </div>
+    <select id="sortSelect" onchange="applyFilters()">
+      <option value="date-desc">Date (Newest)</option>
+      <option value="date-asc">Date (Oldest)</option>
+      <option value="conf-desc">Confidence (High)</option>
+      <option value="conf-asc">Confidence (Low)</option>
+    </select>
+  </div>
+
+  <div class="filter-chips" id="filterChips" style="display:none">
+    <button class="filter-chip active" onclick="applyFilter('all',this)">All</button>
+    <button class="filter-chip" onclick="applyFilter('oval',this)">Oval</button>
+    <button class="filter-chip" onclick="applyFilter('round',this)">Round</button>
+    <button class="filter-chip" onclick="applyFilter('square',this)">Square</button>
+    <button class="filter-chip" onclick="applyFilter('rectangle',this)">Rectangle</button>
+    <button class="filter-chip" onclick="applyFilter('diamond',this)">Diamond</button>
+    <button class="filter-chip" onclick="applyFilter('heart',this)">Heart</button>
+    <button class="filter-chip" onclick="applyFilter('triangle',this)">Triangle</button>
+  </div>
+
+  <div class="history-grid" id="historyGrid"></div>
+
+  <div class="empty-state" id="emptyState" style="display:none">
+    <div class="empty-icon">🔬</div>
+    <div class="empty-title">No Analyses Yet</div>
+    <div class="empty-desc">Your GroomIQ results will appear here after your first analysis.<br>Face shape detection, beard & hairstyle reports are saved automatically.</div>
+    <a href="dashboard.html" class="btn btn-primary" style="padding:14px 36px;border-radius:50px;font-size:0.95rem;">✦ Start Your First Analysis</a>
+  </div>
+
+</div>
+
+<div class="modal-bg" id="modal" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <button class="modal-x" onclick="closeModal()">✕</button>
+    <div id="mImgWrap"></div>
+    <div class="modal-body">
+      <div class="modal-title" id="mTitle"></div>
+      <div class="modal-date" id="mDate"></div>
+      <div class="modal-stats">
+        <div class="modal-stat"><div class="modal-stat-val" id="mConf"></div><div class="modal-stat-lbl">Confidence</div></div>
+        <div class="modal-stat"><div class="modal-stat-val" id="mFace"></div><div class="modal-stat-lbl">Face Shape</div></div>
+        <div class="modal-stat"><div class="modal-stat-val" id="mBeard"></div><div class="modal-stat-lbl">Beard Style</div></div>
+      </div>
+      <div class="modal-sec-title">Recommended Hairstyles</div>
+      <div class="modal-tags" id="mStyles"></div>
+      <div class="modal-sec-title">Grooming Tips</div>
+      <div class="modal-tips" id="mTips"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="mf-btn mf-btn-primary" id="mViewBtn">View Full Report →</button>
+      <button class="mf-btn mf-btn-secondary" id="mDownloadBtn">📄 Download PDF</button>
+      <button class="mf-btn mf-btn-secondary" onclick="closeModal()">Close</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const API = 'http://127.0.0.1:5001';
+const STORAGE_KEY = 'hairHistory';
+
+function getUserId() {
+  return localStorage.getItem('hair_user_id') || 'guest';
+}
+
+function getHistory() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }
+  catch { return []; }
+}
+
+function saveHistory(arr) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(arr));
+}
+
+function formatStr(s) {
+  if (!s) return '';
+  return s.replace(/_/g, ' ').split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+}
+
+function formatDate(iso) {
+  try { return new Date(iso).toLocaleDateString('en-IN', {day:'numeric', month:'short', year:'numeric'}); }
+  catch { return iso || ''; }
+}
+
+function formatTime(iso) {
+  try { return new Date(iso).toLocaleTimeString('en-IN', {hour:'2-digit', minute:'2-digit'}); }
+  catch { return ''; }
+}
+
+function formatDateShort(iso) {
+  try { return new Date(iso).toLocaleDateString('en-IN', {day:'numeric', month:'short'}); }
+  catch { return ''; }
+}
+
+const FACE_COLORS = {
+  oval: { bg:'rgba(74,206,168,0.15)', color:'#4acea8' },
+  round: { bg:'rgba(96,184,245,0.15)', color:'#60b8f5' },
+  square: { bg:'rgba(232,131,74,0.15)', color:'#e8834a' },
+  rectangle: { bg:'rgba(124,111,205,0.15)', color:'#7c6fcd' },
+  diamond: { bg:'rgba(200,169,110,0.15)', color:'#c8a96e' },
+  heart: { bg:'rgba(217,124,212,0.15)', color:'#d97cd4' },
+  triangle: { bg:'rgba(232,90,90,0.15)', color:'#e85a5a' }
+};
+
+const FACE_EMOJI = {
+  oval: '🟢', round: '🔵', square: '🟧', rectangle: '🟪',
+  diamond: '💎', heart: '❤️', triangle: '🔺'
+};
+
+function getFaceColors(face) {
+  const k = (face || '').toLowerCase();
+  return FACE_COLORS[k] || { bg:'rgba(200,169,110,0.15)', color:'#c8a96e' };
+}
+
+function getFaceEmoji(face) {
+  const k = (face || '').toLowerCase();
+  return FACE_EMOJI[k] || '🧑';
+}
+
+// State
+let currentFilter = 'all';
+let currentSort = 'date-desc';
+let currentSearch = '';
+let allHistory = [];
+let chartInstance = null;
+
+function applyFilter(face, btn) {
+  currentFilter = face;
+  document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+  btn.classList.add('active');
+  renderAll();
+}
+
+function applyFilters() {
+  currentSort = document.getElementById('sortSelect').value;
+  renderAll();
+}
+
+function renderAll() {
+  const search = document.getElementById('searchInput').value.toLowerCase().trim();
+  currentSearch = search;
+
+  let filtered = [...allHistory];
+
+  // Face shape filter
+  if (currentFilter !== 'all') {
+    filtered = filtered.filter(h => (h.faceShape || '').toLowerCase() === currentFilter);
+  }
+
+  // Search filter (searches face shape, beard style, hairstyles, hair type)
+  if (currentSearch) {
+    filtered = filtered.filter(h => {
+      const face = (h.faceShape || '').toLowerCase();
+      const beard = (h.beardStyle || '').toLowerCase();
+      const hair = (h.type || '').toLowerCase();
+      const styles = (h.recommendedStyles || []).join(' ').toLowerCase();
+      return face.includes(currentSearch) || beard.includes(currentSearch) || hair.includes(currentSearch) || styles.includes(currentSearch);
+    });
+  }
+
+  // Sort
+  const [sortField, sortDir] = currentSort.split('-');
+  filtered.sort((a, b) => {
+    let va, vb;
+    if (sortField === 'date') {
+      va = new Date(a.date || 0).getTime();
+      vb = new Date(b.date || 0).getTime();
+    } else {
+      va = parseFloat(a.confidence) || 0;
+      vb = parseFloat(b.confidence) || 0;
+    }
+    return sortDir === 'desc' ? vb - va : va - vb;
+  });
+
+  const grid = document.getElementById('historyGrid');
+  if (filtered.length === 0) {
+    grid.innerHTML = '<div class="no-match">No analyses match your filters.</div>';
+    return;
+  }
+
+  grid.innerHTML = filtered.map((item, i) => cardHTML(item, i)).join('');
+}
+
+function cardHTML(item, i) {
+  const delay = i * 0.04;
+  const conf = parseFloat(item.confidence) || 0;
+  const fc = getFaceColors(item.faceShape);
+  const emoji = getFaceEmoji(item.faceShape);
+  const imgSrc = item.image || '';
+  const imgHtml = imgSrc && imgSrc.length > 50
+    ? `<img class="card-img" src="${imgSrc}" alt="" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="card-no-img" style="display:none">${emoji}</div>`
+    : `<div class="card-no-img">${emoji}</div>`;
+
+  return `<div class="card" style="animation-delay:${delay}s">
+    ${imgHtml}
+    <div class="card-body">
+      <div class="card-top">
+        <div class="card-face">${formatStr(item.faceShape) || 'Unknown'}</div>
+        <div class="card-badge" style="background:${fc.bg};color:${fc.color}">${emoji}</div>
+      </div>
+      <div class="card-meta">
+        <div class="card-meta-item">📅 <span>${formatDate(item.date)}</span></div>
+        <div class="card-meta-item">⏰ <span>${formatTime(item.date)}</span></div>
+      </div>
+      <div class="card-tags">
+        ${item.beardStyle ? `<span class="card-tag">🧔 ${formatStr(item.beardStyle)}</span>` : ''}
+        ${item.type ? `<span class="card-tag">💇 ${formatStr(item.type)}</span>` : ''}
+      </div>
+      <div class="conf-bar-wrap">
+        <div class="conf-bar-label">Confidence <span>${conf.toFixed(1)}%</span></div>
+        <div class="conf-bar-track"><div class="conf-bar-fill" style="width:${Math.min(conf,100)}%"></div></div>
+      </div>
+    </div>
+    <div class="card-footer">
+      <button class="cf-btn cf-btn-view" onclick="openModal('${item.id}')">View Report</button>
+      ${item.shareToken ? `<button class="cf-btn cf-btn-share" onclick="event.stopPropagation();copyShareLink('${item.shareToken}')">🔗</button>` : ''}
+      <button class="cf-btn cf-btn-del" onclick="deleteItem('${item.id}')">Delete</button>
+    </div>
+  </div>`;
+}
+
+function updateStats(history) {
+  document.getElementById('statTotal').textContent = history.length;
+
+  // Most common face shape
+  const faceCounts = {};
+  history.forEach(h => {
+    const f = h.faceShape || 'Unknown';
+    faceCounts[f] = (faceCounts[f] || 0) + 1;
+  });
+  const topFace = Object.entries(faceCounts).sort((a,b) => b[1] - a[1])[0];
+  document.getElementById('statTopFace').textContent = topFace ? formatStr(topFace[0]) : '—';
+
+  // Avg confidence
+  const avg = history.reduce((s, h) => s + (parseFloat(h.confidence) || 0), 0) / history.length;
+  document.getElementById('statAvgConf').textContent = avg > 0 ? avg.toFixed(0) + '%' : '—';
+
+  // Last date
+  const sorted = [...history].sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
+  document.getElementById('statLastDate').textContent = sorted.length ? formatDate(sorted[0].date) : '—';
+}
+
+function renderChart(history) {
+  const section = document.getElementById('chartSection');
+  if (history.length < 2) { section.classList.remove('visible'); return; }
+  section.classList.add('visible');
+
+  const sorted = [...history].sort((a, b) => new Date(a.date || 0) - new Date(b.date || 0));
+  const labels = sorted.map(h => formatDateShort(h.date));
+  const confs = sorted.map(h => parseFloat(h.confidence) || 0);
+  const colors = sorted.map(h => getFaceColors(h.faceShape).color);
+
+  if (chartInstance) { chartInstance.destroy(); chartInstance = null; }
+
+  const ctx = document.getElementById('progressChart').getContext('2d');
+  chartInstance = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [{
+        label: 'Confidence %',
+        data: confs,
+        borderColor: '#c8a96e',
+        backgroundColor: 'rgba(200,169,110,0.08)',
+        borderWidth: 2.5,
+        pointBackgroundColor: colors,
+        pointBorderColor: colors,
+        pointRadius: 6,
+        pointHoverRadius: 8,
+        fill: true,
+        tension: 0.4
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#13131a',
+          borderColor: '#2a2a3a',
+          borderWidth: 1,
+          titleColor: '#e8e8f0',
+          bodyColor: '#888899',
+          callbacks: {
+            title: (items) => sorted[items[0].dataIndex] ? formatStr(sorted[items[0].dataIndex].faceShape) : '',
+            label: (item) => `  Confidence: ${item.raw.toFixed(1)}%`
+          }
+        }
+      },
+      scales: {
+        x: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#888899', font: { size: 11 } } },
+        y: { min: 0, max: 100, grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#888899', font: { size: 11 }, callback: v => v + '%' } }
+      }
+    }
+  });
+
+  // Legend
+  const seen = new Set();
+  const legendHtml = sorted.map(h => {
+    const k = (h.faceShape || '').toLowerCase();
+    if (seen.has(k)) return '';
+    seen.add(k);
+    const c = getFaceColors(h.faceShape);
+    const e = getFaceEmoji(h.faceShape);
+    return `<div class="legend-item"><div class="legend-dot" style="background:${c.color}"></div>${e} ${formatStr(h.faceShape)}</div>`;
+  }).filter(Boolean).join('');
+  document.getElementById('chartLegend').innerHTML = legendHtml;
+}
+
+function render(history) {
+  allHistory = history;
+  const grid = document.getElementById('historyGrid');
+  const empty = document.getElementById('emptyState');
+  const stats = document.getElementById('statsRow');
+  const controls = document.getElementById('controlsRow');
+  const chips = document.getElementById('filterChips');
+
+  if (history.length === 0) {
+    grid.innerHTML = '';
+    empty.style.display = 'block';
+    stats.style.display = 'none';
+    controls.style.display = 'none';
+    chips.style.display = 'none';
+    document.getElementById('chartSection').classList.remove('visible');
+    return;
+  }
+
+  empty.style.display = 'none';
+  stats.style.display = 'grid';
+  controls.style.display = 'flex';
+  chips.style.display = 'flex';
+
+  updateStats(history);
+  renderChart(history);
+  renderAll();
+}
+
+// Modal
+let modalItem = null;
+
+function openModal(id) {
+  const item = allHistory.find(h => h.id === id);
+  if (!item) return;
+  modalItem = item;
+
+  const emoji = getFaceEmoji(item.faceShape);
+  const imgWrap = document.getElementById('mImgWrap');
+  imgWrap.innerHTML = item.image && item.image.length > 50
+    ? `<img class="modal-img" src="${item.image}" onerror="this.outerHTML='<div class=modal-no-img>${emoji}</div>'">`
+    : `<div class="modal-no-img">${emoji}</div>`;
+
+  document.getElementById('mTitle').textContent = formatStr(item.faceShape) || 'Face Shape Analysis';
+  document.getElementById('mDate').textContent = `Analyzed on ${formatDate(item.date)} at ${formatTime(item.date)}`;
+  document.getElementById('mConf').textContent = (parseFloat(item.confidence) || 0).toFixed(1) + '%';
+  document.getElementById('mFace').textContent = formatStr(item.faceShape) || '—';
+  document.getElementById('mBeard').textContent = formatStr(item.beardStyle) || '—';
+
+  // Hairstyles
+  const stylesEl = document.getElementById('mStyles');
+  const styles = Array.isArray(item.recommendedStyles) && item.recommendedStyles.length > 0
+    ? item.recommendedStyles
+    : ['Classic Cut'];
+  stylesEl.innerHTML = styles.map(s => `<span class="modal-tag">${s}</span>`).join('');
+
+  // Grooming tips
+  const tipsEl = document.getElementById('mTips');
+  const tips = Array.isArray(item.groomingTips) && item.groomingTips.length > 0
+    ? item.groomingTips
+    : ['Keep hair clean and moisturized', 'Visit barber every 3-4 weeks', 'Use products suited to your hair type'];
+  tipsEl.innerHTML = tips.map(t => `<div class="modal-tip">${t}</div>`).join('');
+
+  document.getElementById('mViewBtn').onclick = () => {
+    sessionStorage.setItem('hairType', item.type || '');
+    sessionStorage.setItem('confidence', item.confidence || '');
+    sessionStorage.setItem('faceShape', item.faceShape || 'Oval');
+    sessionStorage.setItem('beardStyle', item.beardStyle || 'Short Stubble');
+    sessionStorage.setItem('recommendedStyles', JSON.stringify(item.recommendedStyles || []));
+    sessionStorage.setItem('groomingTips', JSON.stringify(item.groomingTips || []));
+    sessionStorage.setItem('webTips', JSON.stringify(item.webTips || []));
+    sessionStorage.setItem('hairImageSrc', item.image || '');
+    sessionStorage.setItem('analysisId', item.id || '');
+    sessionStorage.setItem('shareToken', item.shareToken || '');
+    closeModal();
+    location.href = 'results.html';
+  };
+
+  document.getElementById('mDownloadBtn').onclick = () => {
+    const id = item.analysisId || item.id;
+    if (id) window.open(`${API}/report/${id}`, '_blank');
+  };
+
+  document.getElementById('modal').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('modal').classList.remove('open');
+}
+
+// Delete
+async function deleteItem(id) {
+  if (!confirm('Delete this analysis?')) return;
+  try { await fetch(`${API}/history/${getUserId()}/${id}`, { method:'DELETE' }); } catch(e) {}
+  const history = getHistory().filter(h => h.id !== id);
+  saveHistory(history);
+  if (allHistory) allHistory = allHistory.filter(h => h.id !== id);
+  renderAll();
+  updateStats(allHistory);
+  renderChart(allHistory);
+  if (allHistory.length === 0) render(allHistory);
+}
+
+async function confirmClearAll() {
+  if (!confirm('Clear all history? This cannot be undone.')) return;
+  try { await fetch(`${API}/history/${getUserId()}/clear`, { method:'DELETE' }); } catch(e) {}
+  localStorage.removeItem(STORAGE_KEY);
+  allHistory = [];
+  render(allHistory);
+}
+
+function copyShareLink(token) {
+  const link = `${window.location.origin}/frontend/shared.html?token=${token}`;
+  navigator.clipboard.writeText(link).then(() => {
+    alert('Share link copied!');
+  }).catch(() => {
+    prompt('Copy this link:', link);
+  });
+}
+
+async function loadHistory() {
+  try {
+    const res = await fetch(`${API}/history/${getUserId()}`);
+    if (res.ok) {
+      const data = await res.json();
+      if (data.history && data.history.length > 0) {
+        const hist = data.history.map(h => ({
+          id: h.id,
+          date: h.date,
+          type: h.hair_type,
+          confidence: h.confidence,
+          faceShape: h.face_shape,
+          beardStyle: h.beard_style,
+          recommendedStyles: h.recommended_styles || [],
+          image: h.image,
+          webTips: h.web_tips || [],
+          groomingTips: h.grooming_tips || [],
+          top2: h.top2,
+          shareToken: h.share_token,
+          analysisId: h.id
+        }));
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(hist));
+        render(hist);
+        return;
+      }
+    }
+  } catch(e) {
+    console.log('Backend unavailable, using localStorage');
+  }
+  render(getHistory());
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('searchInput').addEventListener('input', applyFilters);
+  loadHistory();
+});
+</script>
+</body>
+</html>

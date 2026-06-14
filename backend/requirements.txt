@@ -1,0 +1,9 @@
+flask
+flask-cors
+tensorflow
+numpy
+pillow
+requests
+beautifulsoup4
+opencv-python
+replicate

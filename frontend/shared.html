@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shared Report - GroomIQ</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root { --bg:#0a0a0f; --card:#13131a; --border:#2a2a3a; --accent:#c8a96e; --text:#e8e8f0; --muted:#888899; }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { background:var(--bg); color:var(--text); font-family:'DM Sans',sans-serif; min-height:100vh; }
+    .container { max-width:800px; margin:0 auto; padding:40px 24px; }
+    header { text-align:center; margin-bottom:40px; }
+    .logo { font-family:'Playfair Display',serif; font-size:1.4rem; color:var(--accent); letter-spacing:1px; }
+    .subtitle { color:var(--muted); font-size:0.85rem; margin-top:4px; }
+    .card { background:var(--card); border:1px solid var(--border); border-radius:20px; padding:28px; margin-bottom:20px; }
+    .card-title { font-family:'Playfair Display',serif; font-size:1.1rem; color:var(--accent); margin-bottom:16px; display:flex; align-items:center; gap:8px; }
+    .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:16px; margin-bottom:16px; }
+    .stat { background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:12px; padding:16px; text-align:center; }
+    .stat-val { font-family:'Playfair Display',serif; font-size:1.3rem; color:var(--accent); }
+    .stat-lbl { font-size:0.72rem; color:var(--muted); margin-top:4px; text-transform:uppercase; letter-spacing:0.5px; }
+    .chip { display:inline-block; padding:6px 14px; border-radius:50px; background:rgba(200,169,110,0.1); border:1px solid rgba(200,169,110,0.3); color:var(--accent); font-size:0.8rem; margin:4px; }
+    .tip-item { display:flex; align-items:flex-start; gap:8px; padding:8px 0; border-bottom:1px solid var(--border); font-size:0.85rem; color:var(--muted); line-height:1.5; }
+    .tip-item:last-child { border-bottom:none; }
+    .img-wrap { width:100%; max-width:320px; margin:0 auto 20px; border-radius:16px; overflow:hidden; }
+    .img-wrap img { width:100%; display:block; }
+    .loading { text-align:center; padding:60px; color:var(--muted); }
+    .spinner { width:32px; height:32px; border:3px solid var(--border); border-top-color:var(--accent); border-radius:50%; animation:spin 0.8s linear infinite; margin:0 auto 16px; }
+    @keyframes spin { to { transform:rotate(360deg); } }
+    .error { text-align:center; padding:60px; }
+    .error-icon { font-size:3rem; margin-bottom:16px; }
+    .btn { display:inline-block; padding:12px 28px; background:var(--accent); color:#0a0a0f; border:none; border-radius:10px; font-family:'DM Sans',sans-serif; font-size:0.9rem; font-weight:700; cursor:pointer; transition:all 0.2s; text-decoration:none; margin-top:16px; }
+    .btn:hover { background:#d4b87a; }
+    footer { text-align:center; padding:24px; color:var(--muted); font-size:0.78rem; }
+  </style>
+</head>
+<body>
+  <div class="container" id="app">
+    <header>
+      <div class="logo">✦ GroomIQ</div>
+      <div class="subtitle">Shared Grooming Report</div>
+    </header>
+    <div id="content">
+      <div class="loading"><div class="spinner"></div>Loading report...</div>
+    </div>
+    <footer>Powered by GroomIQ — AI Grooming Assistant</footer>
+  </div>
+  <script>
+    const API = 'http://127.0.0.1:5001';
+    const token = new URLSearchParams(location.search).get('token');
+
+    if (!token) {
+      document.getElementById('content').innerHTML = '<div class="error"><div class="error-icon">🔗</div><h2 style="color:var(--text);margin-bottom:8px;">Invalid Link</h2><p style="color:var(--muted);">No share token provided.</p></div>';
+    } else {
+      fetch(`${API}/share/${token}`)
+        .then(r => r.json())
+        .then(data => {
+          if (data.error) throw new Error(data.error);
+          renderReport(data);
+        })
+        .catch(() => {
+          document.getElementById('content').innerHTML = '<div class="error"><div class="error-icon">⚠️</div><h2 style="color:var(--text);margin-bottom:8px;">Report Not Found</h2><p style="color:var(--muted);">This report may have been deleted or the link is invalid.</p></div>';
+        });
+    }
+
+    function renderReport(data) {
+      const imgHtml = data.image ? `<div class="img-wrap"><img src="${data.image}" alt="Analysis photo"></div>` : '';
+      const face = data.face_shape || 'Unknown';
+      const styles = Array.isArray(data.recommended_styles) ? data.recommended_styles : [];
+      const tips = Array.isArray(data.grooming_tips) ? data.grooming_tips : [];
+
+      document.getElementById('content').innerHTML = `
+        ${imgHtml}
+        <div class="grid">
+          <div class="stat"><div class="stat-val">${face}</div><div class="stat-lbl">Face Shape</div></div>
+          <div class="stat"><div class="stat-val">${data.confidence || '—'}%</div><div class="stat-lbl">Confidence</div></div>
+          <div class="stat"><div class="stat-val">${data.beard_style || '—'}</div><div class="stat-lbl">Beard Style</div></div>
+          <div class="stat"><div class="stat-val">${data.hair_type || '—'}</div><div class="stat-lbl">Hair Type</div></div>
+        </div>
+        ${styles.length ? `
+        <div class="card">
+          <div class="card-title">💇 Recommended Hairstyles</div>
+          <div>${styles.map(s => `<span class="chip">${s}</span>`).join('')}</div>
+        </div>` : ''}
+        ${tips.length ? `
+        <div class="card">
+          <div class="card-title">💡 Grooming Tips</div>
+          ${tips.map(t => `<div class="tip-item"><span>✨</span>${t}</div>`).join('')}
+        </div>` : ''}
+        <div style="text-align:center;color:var(--muted);font-size:0.82rem;margin-top:12px;">
+          Analyzed on ${data.date ? new Date(data.date).toLocaleDateString('en-IN', {day:'numeric',month:'short',year:'numeric'}) : 'N/A'}
+        </div>
+        <div style="text-align:center;margin-top:20px;">
+          <a href="signup.html" class="btn">✦ Get Your Own Analysis</a>
+        </div>
+      `;
+    }
+  </script>
+</body>
+</html>

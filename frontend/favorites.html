@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GroomIQ - My Favorites</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0a0a0f; --card: #13131a; --border: #2a2a3a;
+      --accent: #c8a96e; --text: #e8e8f0; --muted: #888899;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { background:var(--bg); color:var(--text); font-family:'DM Sans',sans-serif; min-height:100vh; }
+
+    header {
+      padding:16px 40px; border-bottom:1px solid var(--border);
+      display:flex; align-items:center; justify-content:space-between;
+      background:rgba(10,10,15,0.95); position:sticky; top:0; z-index:100;
+      backdrop-filter:blur(14px);
+    }
+    header h1 { font-family:'Playfair Display',serif; font-size:1.3rem; color:var(--accent); cursor:pointer; }
+    nav { display:flex; align-items:center; gap:20px; }
+    .nav-item { font-size:0.88rem; color:var(--muted); cursor:pointer; transition:color 0.2s; font-weight:500; text-decoration:none; }
+    .nav-item:hover, .nav-item.active { color:var(--accent); }
+
+    .main { padding:32px 40px; max-width:1200px; margin:0 auto; }
+
+    .page-header { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:16px; margin-bottom:28px; }
+    .page-title { font-family:'Playfair Display',serif; font-size:1.8rem; }
+    .page-title span { color:var(--accent); font-style:italic; }
+    .page-sub { color:var(--muted); font-size:0.88rem; margin-top:4px; }
+
+    .header-actions { display:flex; gap:10px; }
+    .btn-share {
+      padding:10px 22px; border-radius:10px; font-family:'DM Sans',sans-serif;
+      font-size:0.85rem; font-weight:600; cursor:pointer; transition:all 0.2s;
+      background:var(--accent); border:none; color:#0a0a0f;
+    }
+    .btn-share:hover { background:#d4b87a; transform:translateY(-2px); }
+    .btn-browse {
+      padding:10px 22px; border-radius:10px; font-family:'DM Sans',sans-serif;
+      font-size:0.85rem; font-weight:600; cursor:pointer; transition:all 0.2s;
+      background:transparent; border:1px solid var(--border); color:var(--text);
+      text-decoration:none;
+    }
+    .btn-browse:hover { border-color:var(--accent); color:var(--accent); }
+
+    .fav-grid {
+      display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:20px;
+    }
+
+    .fav-card {
+      background:var(--card); border:1px solid var(--border); border-radius:20px;
+      overflow:hidden; transition:all 0.3s;
+      animation:fadeUp 0.4s ease forwards; opacity:0;
+    }
+    .fav-card:hover { transform:translateY(-4px); border-color:rgba(200,169,110,0.3); box-shadow:0 20px 50px rgba(0,0,0,0.4); }
+
+    @keyframes fadeUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+
+    .fc-img {
+      width:100%; height:180px; object-fit:cover; display:block; background:#1a1a25;
+    }
+    .fc-img-placeholder {
+      width:100%; height:180px; background:linear-gradient(135deg,#1a1a2e,#16213e);
+      display:flex; align-items:center; justify-content:center; font-size:3rem;
+    }
+
+    .fc-body { padding:18px; }
+    .fc-name { font-family:'Playfair Display',serif; font-size:1.1rem; color:var(--text); margin-bottom:4px; }
+    .fc-date { font-size:0.78rem; color:var(--muted); margin-bottom:12px; }
+    .fc-date span { color:var(--accent); }
+
+    .fc-actions { display:flex; gap:8px; }
+    .fc-btn {
+      flex:1; padding:9px; border-radius:9px; font-family:'DM Sans',sans-serif;
+      font-size:0.78rem; font-weight:600; cursor:pointer; transition:all 0.2s; border:none;
+    }
+    .fc-btn-remove { background:rgba(232,90,90,0.12); color:#e85a5a; border:1px solid rgba(232,90,90,0.2); }
+    .fc-btn-remove:hover { background:rgba(232,90,90,0.25); }
+
+    .empty-state { text-align:center; padding:80px 20px; color:var(--muted); }
+    .empty-icon { font-size:4rem; margin-bottom:16px; }
+    .empty-title { font-family:'Playfair Display',serif; font-size:1.4rem; color:var(--text); margin-bottom:10px; }
+    .empty-desc { font-size:0.9rem; line-height:1.6; margin-bottom:28px; }
+    .btn-start {
+      padding:14px 36px; background:var(--accent); color:#0a0a0f;
+      border:none; border-radius:50px; font-family:'DM Sans',sans-serif;
+      font-size:0.95rem; font-weight:700; cursor:pointer; transition:all 0.3s; text-decoration:none; display:inline-block;
+    }
+    .btn-start:hover { background:#d4b87a; transform:translateY(-2px); box-shadow:0 12px 30px rgba(200,169,110,0.3); }
+
+    .toast {
+      position:fixed; bottom:30px; left:50%; transform:translateX(-50%);
+      background:var(--card); border:1px solid var(--border); border-radius:12px;
+      padding:12px 24px; font-size:0.85rem; color:var(--text);
+      opacity:0; transition:opacity 0.3s; z-index:200; pointer-events:none;
+    }
+    .toast.show { opacity:1; }
+    .toast.ok { border-color:#4acea8; }
+    .toast.err { border-color:#e85a5a; }
+
+    @media(max-width:768px) {
+      header { padding:14px 20px; }
+      .main { padding:20px; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1 onclick="location.href='dashboard.html'">✦ GroomIQ</h1>
+  <nav>
+    <a class="nav-item" href="dashboard.html">Dashboard</a>
+    <a class="nav-item" href="history.html">History</a>
+    <a class="nav-item active" href="gallery.html">Gallery</a>
+  </nav>
+</header>
+
+<div class="main">
+  <div class="page-header">
+    <div>
+      <div class="page-title">My <span>Favorites</span></div>
+      <div class="page-sub">Your saved hairstyles, all in one place</div>
+    </div>
+    <div class="header-actions">
+      <button class="btn-share" onclick="shareFavorites()">📤 Share List</button>
+      <a class="btn-browse" href="gallery.html">Browse Gallery</a>
+    </div>
+  </div>
+
+  <div class="fav-grid" id="favGrid"></div>
+
+  <div class="empty-state" id="emptyState" style="display:none">
+    <div class="empty-icon">💇</div>
+    <div class="empty-title">No Favorites Yet</div>
+    <div class="empty-desc">Explore the hairstyle gallery and save styles you love. They will appear here.</div>
+    <a class="btn-start" href="gallery.html">✦ Browse Hairstyles</a>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="../js/auth.js"></script>
+<script>
+  const API = 'http://127.0.0.1:5001';
+  const user = GroomIQAuth.getSession().user;
+  const userId = user ? user.id : null;
+
+  if (!userId) { window.location.href = 'login.html'; }
+
+  function showToast(msg, type) {
+    const t = document.getElementById('toast');
+    t.textContent = msg; t.className = 'toast ' + type + ' show';
+    setTimeout(() => t.classList.remove('show'), 2500);
+  }
+
+  function formatDate(iso) {
+    try { return new Date(iso).toLocaleDateString('en-IN', {day:'numeric', month:'short', year:'numeric'}); }
+    catch { return iso || 'Unknown'; }
+  }
+
+  function renderFavorites(favorites) {
+    const grid = document.getElementById('favGrid');
+    const empty = document.getElementById('emptyState');
+    if (!favorites || favorites.length === 0) {
+      grid.innerHTML = '';
+      empty.style.display = 'block';
+      return;
+    }
+    empty.style.display = 'none';
+    grid.innerHTML = favorites.map((f, i) => {
+      const name = f.hairstyle || f.name || 'Hairstyle';
+      const date = f.saved_at || f.date || f.created_at;
+      const imgSrc = f.image_url || f.image || `hairstyles/${name.toLowerCase().replace(/\s+/g,'')}.png`;
+      return `
+      <div class="fav-card" style="animation-delay:${i*0.06}s">
+        <img class="fc-img" src="${imgSrc}" alt="${name}"
+          onerror="this.outerHTML='<div class=\\'fc-img-placeholder\\'>💇</div>'">
+        <div class="fc-body">
+          <div class="fc-name">${name}</div>
+          <div class="fc-date">Saved on <span>${formatDate(date)}</span></div>
+          <div class="fc-actions">
+            <button class="fc-btn fc-btn-remove" onclick="removeFav('${name}',this)">✕ Remove</button>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  async function removeFav(name, btn) {
+    if (!userId) return;
+    btn.disabled = true;
+    btn.textContent = 'Removing...';
+    try {
+      await GroomIQAuth.apiFetch(`/favorites/${userId}/${encodeURIComponent(name)}`, { method:'DELETE' });
+      showToast('Removed from favorites', 'ok');
+      loadFavorites();
+    } catch(e) {
+      showToast('Error removing favorite', 'err');
+      btn.disabled = false;
+      btn.textContent = '✕ Remove';
+    }
+  }
+
+  async function shareFavorites() {
+    const text = document.getElementById('favGrid').textContent.trim()
+      ? Array.from(document.querySelectorAll('.fc-name')).map(el => `- ${el.textContent}`).join('\n')
+      : 'No favorites yet';
+    const shareText = `✨ My GroomIQ Favorite Hairstyles:\n${text}`;
+    if (navigator.share) {
+      try { await navigator.share({ title:'My GroomIQ Favorites', text:shareText }); }
+      catch(e) { if (e.name !== 'AbortError') copyToClipboard(shareText); }
+    } else {
+      copyToClipboard(shareText);
+    }
+  }
+
+  function copyToClipboard(text) {
+    navigator.clipboard.writeText(text).then(() => {
+      showToast('Favorites list copied to clipboard!', 'ok');
+    }).catch(() => {
+      prompt('Copy this list:', text);
+    });
+  }
+
+  async function loadFavorites() {
+    try {
+      const d = await GroomIQAuth.apiFetch(`/favorites/${userId}`);
+      renderFavorites(d.favorites || []);
+    } catch(e) {
+      showToast('Could not load favorites', 'err');
+      renderFavorites([]);
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', loadFavorites);
+</script>
+</body>
+</html>
