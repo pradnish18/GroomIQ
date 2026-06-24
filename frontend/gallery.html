@@ -140,9 +140,10 @@
 
 <div class="toast" id="toast"></div>
 
-<script src="../js/auth.js"></script>
+<script src="js/config.js"></script>
+<script src="js/auth.js"></script>
 <script>
-  const API = 'http://127.0.0.1:5001';
+  const API = window.API_BASE;
   const user = GroomIQAuth.getSession().user;
   const userId = user ? user.id : null;
   let allHairstyles = [];
@@ -241,7 +242,7 @@
   async function loadRating(hairstyle) {
     try {
       const d = await GroomIQAuth.apiFetch(`/ratings/${encodeURIComponent(hairstyle)}`);
-      ratingCache[hairstyle] = { avg: d.average_rating || 0, count: d.total_ratings || 0 };
+      ratingCache[hairstyle] = { avg: d.avg_rating || 0, count: d.count || 0 };
       renderGallery();
     } catch(e) {}
   }

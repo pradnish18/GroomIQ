@@ -1,5 +1,6 @@
 import tensorflow as tf
 from tensorflow.keras import layers
+from tensorflow.keras.applications.efficientnet import preprocess_input
 import os
 
 dataset_path = "../datasets_type"
@@ -9,35 +10,32 @@ print("===== HAIR TYPE MODEL =====")
 print("Classes:", all_classes)
 
 IMG_SIZE   = 224
-BATCH_SIZE = 16
+BATCH_SIZE = 32
 
-train_ds = tf.keras.utils.image_dataset_from_directory(
-    dataset_path, validation_split=0.2, subset="training",
-    seed=42, image_size=(IMG_SIZE, IMG_SIZE), batch_size=BATCH_SIZE
-)
-val_ds = tf.keras.utils.image_dataset_from_directory(
-    dataset_path, validation_split=0.2, subset="validation",
-    seed=42, image_size=(IMG_SIZE, IMG_SIZE), batch_size=BATCH_SIZE
+full_ds = tf.keras.utils.image_dataset_from_directory(
+    dataset_path, seed=42, image_size=(IMG_SIZE, IMG_SIZE), batch_size=BATCH_SIZE
 )
 
-class_names = train_ds.class_names
+class_names = full_ds.class_names
 num_classes = len(class_names)
 print(f"Classes detected: {class_names}")
 
-data_augmentation = tf.keras.Sequential([
-    layers.RandomFlip("horizontal"),
-    layers.RandomRotation(0.15),
-    layers.RandomZoom(0.15),
-    layers.RandomBrightness(0.2),
-    layers.RandomContrast(0.2),
-])
+total = sum(1 for _ in full_ds.unbatch())
+train_size = int(0.7 * total)
+val_size   = int(0.2 * total)
 
-AUTOTUNE = tf.data.AUTOTUNE
-train_ds = train_ds.map(
-    lambda x, y: (data_augmentation(x, training=True), y),
-    num_parallel_calls=AUTOTUNE
-).cache().shuffle(1000).prefetch(AUTOTUNE)
-val_ds = val_ds.cache().prefetch(AUTOTUNE)
+train_ds = full_ds.take(train_size // BATCH_SIZE)
+val_ds   = full_ds.skip(train_size // BATCH_SIZE).take(val_size // BATCH_SIZE)
+test_ds  = full_ds.skip((train_size + val_size) // BATCH_SIZE)
+
+print(f"Train: {train_size}, Val: {val_size}, Test: {total - train_size - val_size}")
+
+def normalize(image, label):
+    return preprocess_input(image), label
+
+train_ds = train_ds.map(normalize).cache().prefetch(tf.data.AUTOTUNE)
+val_ds   = val_ds.map(normalize).cache().prefetch(tf.data.AUTOTUNE)
+test_ds  = test_ds.map(normalize).cache().prefetch(tf.data.AUTOTUNE)
 
 base_model = tf.keras.applications.EfficientNetB0(
     input_shape=(IMG_SIZE, IMG_SIZE, 3),
@@ -70,11 +68,11 @@ model.compile(
 model.summary()
 
 print("\n===== PHASE 1: Frozen base =====")
-history = model.fit(train_ds, validation_data=val_ds, epochs=20, callbacks=callbacks)
+history = model.fit(train_ds, validation_data=val_ds, epochs=30, callbacks=callbacks)
 
 print("\n===== PHASE 2: Fine tuning =====")
 base_model.trainable = True
-for layer in base_model.layers[:-40]:
+for layer in base_model.layers[:-60]:
     layer.trainable = False
 
 model.compile(
@@ -84,11 +82,16 @@ model.compile(
 )
 
 callbacks_ft = [
-    tf.keras.callbacks.EarlyStopping(monitor='val_accuracy', patience=4, restore_best_weights=True, verbose=1),
+    tf.keras.callbacks.EarlyStopping(monitor='val_accuracy', patience=5, restore_best_weights=True, verbose=1),
     tf.keras.callbacks.ModelCheckpoint("../model/type_model.h5", monitor='val_accuracy', save_best_only=True, verbose=1),
-    tf.keras.callbacks.ReduceLROnPlateau(monitor='val_loss', factor=0.3, patience=2, min_lr=1e-8, verbose=1)
+    tf.keras.callbacks.ReduceLROnPlateau(monitor='val_loss', factor=0.3, patience=3, min_lr=1e-8, verbose=1)
 ]
 
-model.fit(train_ds, validation_data=val_ds, epochs=15, callbacks=callbacks_ft)
+model.fit(train_ds, validation_data=val_ds, epochs=20, callbacks=callbacks_ft)
 model.save("../model/type_model.h5")
+
+print("\n===== EVALUATION ON TEST SET =====")
+test_loss, test_acc = model.evaluate(test_ds, verbose=1)
+print(f"Test accuracy: {test_acc:.4f} ({test_acc*100:.2f}%)")
+print(f"Test loss: {test_loss:.4f}")
 print("\n✅ Type model saved to ../model/type_model.h5")

@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
 import tensorflow as tf
+from tensorflow.keras.applications.efficientnet import preprocess_input
 from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
 from PIL import Image
@@ -16,18 +17,34 @@ from recommendations.hairstyles import recommend_styles
 from ai_preview import generate_preview
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, origins=[
+    'http://127.0.0.1:8000',
+    'http://localhost:8000',
+    'https://groomiq.vercel.app',
+], supports_credentials=True)
 
 CLASSES = ['Straight', 'Wavy', 'bald', 'curly', 'dreadlocks',
            'dry', 'frizzy', 'hairfall', 'healthy', 'kinky', 'notbald']
+TYPE_CLASSES  = ['Straight', 'Wavy', 'curly', 'dreadlocks', 'kinky']
+COND_CLASSES  = ['bald', 'dry', 'hairfall', 'healthy']
 
 model = None
+type_model = None
+cond_model = None
 try:
-    model = tf.keras.models.load_model("../model/best_model.h5")
+    model = tf.keras.models.load_model("model/best_model.h5")
 except Exception as e:
-    print("Model not loaded:", e)
+    print("Main model not loaded:", e)
+try:
+    type_model = tf.keras.models.load_model("model/type_model.h5")
+except Exception as e:
+    print("Type model not loaded:", e)
+try:
+    cond_model = tf.keras.models.load_model("model/condition_model.h5")
+except Exception as e:
+    print("Condition model not loaded:", e)
 
-DB_PATH = "../model/groomiq.db"
+DB_PATH = "model/groomiq.db"
 
 def get_db():
     conn = sqlite3.connect(DB_PATH)
@@ -35,6 +52,7 @@ def get_db():
     return conn
 
 def init_db():
+    os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
     conn = get_db()
     conn.executescript("""
         CREATE TABLE IF NOT EXISTS users (
@@ -406,15 +424,37 @@ def predict(user_id):
     try:
         file = request.files['image']
         img_bytes = file.read()
-        img = Image.open(io.BytesIO(img_bytes)).resize((299, 299)).convert("RGB")
+        img_299 = Image.open(io.BytesIO(img_bytes)).resize((299, 299)).convert("RGB")
+        img_224 = Image.open(io.BytesIO(img_bytes)).resize((224, 224)).convert("RGB")
         face_shape, confidence_score = detect_face_shape_from_image(img_bytes)
         beard_style = recommend_beard(face_shape)
         hair_type = None
         hair_confidence = 0
         top2 = []
-        if model is not None:
-            import tensorflow as tf
-            arr = np.expand_dims(np.array(img, dtype=np.float32), axis=0)
+        # Predict hair TYPE using dedicated type model (5 classes)
+        if type_model is not None:
+            arr = np.expand_dims(np.array(img_224, dtype=np.float32), axis=0)
+            arr = preprocess_input(arr)
+            probs = type_model.predict(arr, verbose=0)[0]
+            top_idx = int(np.argmax(probs))
+            hair_type = TYPE_CLASSES[top_idx]
+            hair_confidence = round(float(probs[top_idx]) * 100, 2)
+            top2 = [{"hair_type": TYPE_CLASSES[i], "confidence": round(float(probs[i]) * 100, 2)}
+                    for i in probs.argsort()[-2:][::-1]]
+        # Predict hair CONDITION using dedicated condition model (4 classes: bald, dry, hairfall, healthy)
+        hair_condition = None
+        cond_confidence = 0
+        if cond_model is not None:
+            arr = np.expand_dims(np.array(img_224, dtype=np.float32), axis=0)
+            arr = preprocess_input(arr)
+            probs = cond_model.predict(arr, verbose=0)[0]
+            top_idx = int(np.argmax(probs))
+            hair_condition = COND_CLASSES[top_idx]
+            cond_confidence = round(float(probs[top_idx]) * 100, 2)
+        # Fallback: use combined main model if type_model unavailable
+        if hair_type is None and model is not None:
+            arr = np.expand_dims(np.array(img_224, dtype=np.float32), axis=0)
+            arr = preprocess_input(arr)
             probs = model.predict(arr, verbose=0)[0]
             top_idx = int(np.argmax(probs))
             hair_type = CLASSES[top_idx]
@@ -451,6 +491,7 @@ def predict(user_id):
         conn.close()
         return jsonify({
             "hair_type": hair_type, "confidence": hair_confidence,
+            "hair_condition": hair_condition, "cond_confidence": cond_confidence,
             "face_shape": face_shape, "confidence_score": confidence_score,
             "beard_style": beard_style,
             "recommended_styles": recommended_styles,
@@ -871,6 +912,15 @@ def admin_analytics(uid):
         "face_shape_distribution": [{"shape": r['face_shape'], "count": r['cnt']} for r in face_shapes]
     })
 
+@app.route('/admin/analyses/<analysis_id>', methods=['DELETE'])
+@admin_required
+def admin_delete_analysis(uid, analysis_id):
+    conn = get_db()
+    conn.execute("DELETE FROM analyses WHERE id=?", (analysis_id,))
+    conn.commit()
+    conn.close()
+    return jsonify({"status": "deleted"})
+
 # ================================================================
 # HEALTH
 # ================================================================
@@ -893,4 +943,6 @@ def refresh_advice():
 
 if __name__ == '__main__':
     import tensorflow as tf
-    app.run(debug=True, port=5001)
+    port = int(os.getenv('PORT', 5001))
+    debug = os.getenv('FLASK_ENV', 'development') == 'development'
+    app.run(debug=debug, port=port, host='0.0.0.0')

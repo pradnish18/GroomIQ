@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: groomiq-api
+    env: python
+    region: oregon
+    plan: free
+    buildCommand: pip install -r backend/requirements.txt
+    startCommand: cd backend && gunicorn app:app --bind 0.0.0.0:$PORT --timeout 120 --workers 2
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.8
+      - key: FLASK_ENV
+        value: production
+      - key: JWT_SECRET_KEY
+        sync: false
+      - key: REPLICATE_API_TOKEN
+        sync: false
+      - key: STABILITY_API_KEY
+        sync: false

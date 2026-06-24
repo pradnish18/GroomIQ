@@ -1,4 +1,4 @@
-const API_BASE = 'http://127.0.0.1:5001';
+const API_BASE = window.API_BASE;
 
 function saveSession(token, user) {
     localStorage.setItem('groomiq_token', token);

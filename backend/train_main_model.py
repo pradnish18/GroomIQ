@@ -3,10 +3,11 @@ from tensorflow.keras import layers
 from tensorflow.keras.applications.efficientnet import preprocess_input
 import os
 
-dataset_path = "../datasets_condition"
-all_classes  = ['bald', 'dry', 'hairfall', 'healthy']
+dataset_path = "../datasets"
+all_classes  = ['Straight', 'Wavy', 'bald', 'curly', 'dreadlocks',
+                'dry', 'frizzy', 'hairfall', 'healthy', 'kinky', 'notbald']
 
-print("===== HAIR CONDITION MODEL =====")
+print("===== COMBINED HAIR MODEL (11 classes) =====")
 print("Classes:", all_classes)
 
 IMG_SIZE   = 224
@@ -47,16 +48,16 @@ inputs = tf.keras.Input(shape=(IMG_SIZE, IMG_SIZE, 3))
 x = base_model(inputs, training=False)
 x = layers.GlobalAveragePooling2D()(x)
 x = layers.BatchNormalization()(x)
-x = layers.Dropout(0.5)(x)
+x = layers.Dropout(0.4)(x)
 x = layers.Dense(256, activation='relu')(x)
 x = layers.BatchNormalization()(x)
-x = layers.Dropout(0.4)(x)
+x = layers.Dropout(0.3)(x)
 outputs = layers.Dense(num_classes, activation='softmax')(x)
 model = tf.keras.Model(inputs, outputs)
 
 callbacks = [
     tf.keras.callbacks.EarlyStopping(monitor='val_accuracy', patience=5, restore_best_weights=True, verbose=1),
-    tf.keras.callbacks.ModelCheckpoint("../model/condition_model.h5", monitor='val_accuracy', save_best_only=True, verbose=1),
+    tf.keras.callbacks.ModelCheckpoint("../model/best_model.h5", monitor='val_accuracy', save_best_only=True, verbose=1),
     tf.keras.callbacks.ReduceLROnPlateau(monitor='val_loss', factor=0.3, patience=3, min_lr=1e-7, verbose=1)
 ]
 
@@ -83,15 +84,15 @@ model.compile(
 
 callbacks_ft = [
     tf.keras.callbacks.EarlyStopping(monitor='val_accuracy', patience=5, restore_best_weights=True, verbose=1),
-    tf.keras.callbacks.ModelCheckpoint("../model/condition_model.h5", monitor='val_accuracy', save_best_only=True, verbose=1),
+    tf.keras.callbacks.ModelCheckpoint("../model/best_model.h5", monitor='val_accuracy', save_best_only=True, verbose=1),
     tf.keras.callbacks.ReduceLROnPlateau(monitor='val_loss', factor=0.3, patience=3, min_lr=1e-8, verbose=1)
 ]
 
 model.fit(train_ds, validation_data=val_ds, epochs=20, callbacks=callbacks_ft)
-model.save("../model/condition_model.h5")
+model.save("../model/best_model.h5")
 
 print("\n===== EVALUATION ON TEST SET =====")
 test_loss, test_acc = model.evaluate(test_ds, verbose=1)
 print(f"Test accuracy: {test_acc:.4f} ({test_acc*100:.2f}%)")
 print(f"Test loss: {test_loss:.4f}")
-print("\n✅ Condition model saved to ../model/condition_model.h5")
+print("\nCombined model saved to ../model/best_model.h5")

@@ -15,3 +15,5 @@ build/
 .env
 *.log
 /tmp/
+Archive*.zip
+structure.txt

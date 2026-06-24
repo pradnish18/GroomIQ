@@ -6,6 +6,7 @@
   <title>GroomIQ – History</title>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="js/config.js"></script>
   <style>
     :root {
       --bg: #0a0a0f; --card: #13131a; --border: #2a2a3a;
@@ -261,7 +262,7 @@
 </div>
 
 <script>
-const API = 'http://127.0.0.1:5001';
+const API = window.API_BASE;
 const STORAGE_KEY = 'hairHistory';
 
 function getUserId() {
@@ -605,7 +606,12 @@ function closeModal() {
 // Delete
 async function deleteItem(id) {
   if (!confirm('Delete this analysis?')) return;
-  try { await fetch(`${API}/history/${getUserId()}/${id}`, { method:'DELETE' }); } catch(e) {}
+  try {
+    const s = GroomIQAuth.getSession();
+    const h = { method:'DELETE' };
+    if (s.token) h.headers = { 'Authorization': 'Bearer ' + s.token };
+    await fetch(`${API}/history/${getUserId()}/${id}`, h);
+  } catch(e) {}
   const history = getHistory().filter(h => h.id !== id);
   saveHistory(history);
   if (allHistory) allHistory = allHistory.filter(h => h.id !== id);
@@ -617,7 +623,12 @@ async function deleteItem(id) {
 
 async function confirmClearAll() {
   if (!confirm('Clear all history? This cannot be undone.')) return;
-  try { await fetch(`${API}/history/${getUserId()}/clear`, { method:'DELETE' }); } catch(e) {}
+  try {
+    const s = GroomIQAuth.getSession();
+    const h = { method:'DELETE' };
+    if (s.token) h.headers = { 'Authorization': 'Bearer ' + s.token };
+    await fetch(`${API}/history/${getUserId()}/clear`, h);
+  } catch(e) {}
   localStorage.removeItem(STORAGE_KEY);
   allHistory = [];
   render(allHistory);

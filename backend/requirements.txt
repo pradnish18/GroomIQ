@@ -7,3 +7,5 @@ requests
 beautifulsoup4
 opencv-python
 replicate
+gunicorn
+fpdf2

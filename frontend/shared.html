@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Shared Report - GroomIQ</title>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <script src="js/config.js"></script>
   <style>
     :root { --bg:#0a0a0f; --card:#13131a; --border:#2a2a3a; --accent:#c8a96e; --text:#e8e8f0; --muted:#888899; }
     * { margin:0; padding:0; box-sizing:border-box; }
@@ -46,7 +47,7 @@
     <footer>Powered by GroomIQ — AI Grooming Assistant</footer>
   </div>
   <script>
-    const API = 'http://127.0.0.1:5001';
+    const API = window.API_BASE;
     const token = new URLSearchParams(location.search).get('token');
 
     if (!token) {

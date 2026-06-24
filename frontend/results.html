@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>GroomIQ – Analysis Results</title>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <script src="js/config.js"></script>
   <style>
     :root {
       --bg: #0a0a0f; --card: #13131a; --border: #2a2a3a;
@@ -223,7 +224,7 @@ const data = {
   })()
 };
 
-const API = 'http://127.0.0.1:5001';
+const API = window.API_BASE;
 
 function getUserId() {
   return localStorage.getItem('hair_user_id') || 'guest';
@@ -373,17 +374,14 @@ async function saveFavorite() {
   btn.innerHTML = '<span class="spinner"></span>Saving...';
   try {
     const uid = getUserId();
+    const s = GroomIQAuth.getSession();
     const res = await fetch(`${API}/favorites/${uid}`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        analysis_id: data.analysisId,
-        hair_type: data.hairType,
-        face_shape: data.faceShape,
-        beard_style: data.beardStyle,
-        recommended_styles: data.recommendedStyles,
-        confidence: data.confidence
-      })
+      headers: {
+        'Content-Type': 'application/json',
+        ...(s.token ? { 'Authorization': 'Bearer ' + s.token } : {})
+      },
+      body: JSON.stringify({ hairstyle: data.recommendedStyles?.[0] || 'Textured Crop' })
     });
     if (!res.ok) throw new Error('Server error');
     showToast('❤️ Saved to favorites!', 'success');
@@ -461,9 +459,13 @@ async function generatePreview(hairstyle, btn) {
   }
 
   try {
+    const s = GroomIQAuth.getSession();
     const res = await fetch(`${API}/ai-preview`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        ...(s.token ? { 'Authorization': 'Bearer ' + s.token } : {})
+      },
       body: JSON.stringify({
         image: imageSrc,
         hairstyle: hairstyle,
