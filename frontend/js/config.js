@@ -1,3 +1,3 @@
 window.API_BASE = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
   ? 'http://127.0.0.1:5001'
-  : 'https://groomiq-api.onrender.com';
+  : 'https://groomiq.onrender.com';
