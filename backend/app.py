@@ -21,7 +21,7 @@ app = Flask(__name__)
 CORS(app, origins=[
     'http://127.0.0.1:8000',
     'http://localhost:8000',
-    'https://groomiq.vercel.app',
+    'https://groom-iq-xi.vercel.app',
 ], supports_credentials=True)
 
 CLASSES = ['Straight', 'Wavy', 'bald', 'curly', 'dreadlocks',
