@@ -4,6 +4,8 @@ python-dotenv
 tensorflow
 numpy
 pillow
+bcrypt
+pyjwt
 requests
 beautifulsoup4
 opencv-python
