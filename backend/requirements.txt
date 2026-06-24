@@ -1,5 +1,6 @@
 flask
 flask-cors
+python-dotenv
 tensorflow
 numpy
 pillow

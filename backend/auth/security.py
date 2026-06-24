@@ -3,10 +3,7 @@ import jwt
 import os
 from datetime import datetime, timedelta, UTC
 
-SECRET_KEY = os.environ.get(
-    "JWT_SECRET_KEY",
-    "d9d2b2b875caf593ea705e03529f105a1f6065c6019547a542cd67e44a40b29e"
-)
+SECRET_KEY = os.environ.get("JWT_SECRET_KEY")
 
 
 def hash_password(password):

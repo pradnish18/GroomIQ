@@ -2,6 +2,7 @@ import cv2
 import numpy as np
 import tensorflow as tf
 from tensorflow.keras.applications.efficientnet import preprocess_input
+from dotenv import load_dotenv; load_dotenv()
 from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
 from PIL import Image
