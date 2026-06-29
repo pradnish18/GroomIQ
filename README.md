@@ -177,7 +177,3 @@ Training uses EfficientNetB0 with 224x224 input, 70/20/10 split, batch size 32, 
 4. **Authorized JavaScript origins**: Add your frontend URLs (e.g. `http://localhost:8000`, `https://groom-iq-xi.vercel.app`)
 5. **Authorized redirect URIs**: Leave empty (GSI flow, not redirect)
 6. Copy the Client ID into `frontend/login.html` and `frontend/signup.html`
-
-## License
-
-MIT
